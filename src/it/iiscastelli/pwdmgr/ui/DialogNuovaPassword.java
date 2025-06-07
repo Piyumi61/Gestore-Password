@@ -1,6 +1,7 @@
 package it.iiscastelli.pwdmgr.ui;
 
 import it.iiscastelli.pwdmgr.config.Colore;
+import it.iiscastelli.pwdmgr.config.Costanti;
 import it.iiscastelli.pwdmgr.model.Credenziali;
 import it.iiscastelli.pwdmgr.model.GeneratorePassword;
 import it.iiscastelli.pwdmgr.model.ValutatoreComplessita;
@@ -9,6 +10,31 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 
 public class DialogNuovaPassword extends javax.swing.JDialog {
+    
+    private static final int LUNGHEZZA_MIN = Costanti.LUNGHEZZA_MIN;
+    private static final int LUNGHEZZA_MAX = Costanti.LUNGHEZZA_MAX;
+    private static final int LUNGHEZZA_INIZIALE = Costanti.LUNGHEZZA_INIZIALE;
+    
+    private static final String MINUSCOLE_ACTION_COMMAND = "Minuscole";
+    private static final String MAIUSCOLE_ACTION_COMMAND = "Maiuscole";
+    private static final String CIFRE_ACTION_COMMAND = "Cifre";
+    private static final String SIMBOLI_ACTION_COMMAND = "Simboli";
+    
+    private static final String MANUALE_ACTION_COMMAND = "Manuale";
+    private static final String CASUALE_ACTION_COMMAND = "Casuale";
+    
+    private static final int SOGLIA_MOLTO_DEBOLE = ValutatoreComplessita.SOGLIA_MOLTO_DEBOLE;
+    private static final int SOGLIA_DEBOLE = ValutatoreComplessita.SOGLIA_DEBOLE;
+    private static final int SOGLIA_BUONA = ValutatoreComplessita.SOGLIA_BUONA;
+    private static final int SOGLIA_MOLTO_BUONA = ValutatoreComplessita.SOGLIA_MOLTO_BUONA;
+    private static final int SOGLIA_FORTE = ValutatoreComplessita.SOGLIA_FORTE;
+    
+    private static final String TESTO_MOLTO_DEBOLE = ValutatoreComplessita.TESTO_MOLTO_DEBOLE;
+    private static final String TESTO_DEBOLE = ValutatoreComplessita.TESTO_DEBOLE;
+    private static final String TESTO_BUONA = ValutatoreComplessita.TESTO_BUONA;
+    private static final String TESTO_MOLTO_BUONA = ValutatoreComplessita.TESTO_MOLTO_BUONA;
+    private static final String TESTO_FORTE = ValutatoreComplessita.TESTO_FORTE;
+    private static final String TESTO_MOLTO_FORTE = ValutatoreComplessita.TESTO_MOLTO_FORTE;
 
     private FramePrincipale padre;
     private Credenziali credenziali;
@@ -33,19 +59,23 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     }
     
     private void inizializza() {
-        lunghezza = 6;
+        lunghezza = LUNGHEZZA_INIZIALE;
         minuscole = true;
         maiuscole = true;
         cifre = true;
         simboli = true;
         password = "";
         lunghezzaStr = String.valueOf(lunghezza);
+        txtLunghezza.setText(lunghezzaStr);
         generatore = new GeneratorePassword(lunghezza, maiuscole, minuscole, cifre, simboli);
         valutatore = new ValutatoreComplessita(password);
         btnGenera.setVisible(false);
         pnlConfigurazione.setVisible(false);
         pbComplessita.setValue(0);
         lblComplessita.setVisible(false);
+        sldLunghezza.setMinimum(LUNGHEZZA_MIN);
+        sldLunghezza.setMaximum(LUNGHEZZA_MAX);
+        sldLunghezza.setValue(LUNGHEZZA_INIZIALE);
         nascondiPassword();
         pack();
     }
@@ -57,11 +87,17 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     private void mostraPassword() {
         pnlPwdPassword.setVisible(false);
         pnlTxtPassword.setVisible(true);
+        txtPassword.requestFocus();
+        txtPassword.setText(password);
+        txtPassword.select(password.length(), password.length());
     }
     
     private void nascondiPassword() {
-        pnlPwdPassword.setVisible(true);
         pnlTxtPassword.setVisible(false);
+        pnlPwdPassword.setVisible(true);
+        pwdPassword.requestFocus();
+        pwdPassword.setText(password);
+        pwdPassword.select(password.length(), password.length());
     }
     
     private int contaCheckboxSelezionate() {
@@ -124,15 +160,15 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     
     private void aggiornaColoreProgressBar() {
         int valore = pbComplessita.getValue();
-        if(valore < 20) {
+        if(valore <= SOGLIA_MOLTO_DEBOLE) {
             pbComplessita.setForeground(Colore.RED);
-        } else if(valore < 40) {
+        } else if(valore <= SOGLIA_DEBOLE) {
             pbComplessita.setForeground(Colore.ORANGE);
-        } else if(valore < 60) {
+        } else if(valore <= SOGLIA_BUONA) {
             pbComplessita.setForeground(Colore.YELLOW);
-        } else if(valore < 80) {
+        } else if(valore <= SOGLIA_MOLTO_BUONA) {
             pbComplessita.setForeground(Colore.GREEN);
-        } else if(valore < 100) {
+        } else if(valore <= SOGLIA_FORTE) {
             pbComplessita.setForeground(Colore.TEAL);
         } else {
             pbComplessita.setForeground(Colore.CYAN);
@@ -142,20 +178,30 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     private void aggiornaTestoComplessita() {
         int valore = pbComplessita.getValue();
         lblComplessita.setVisible(!password.isEmpty());
-        if(valore < 20) {
-            lblComplessita.setText("Molto debole");
-        } else if(valore < 40) {
-            lblComplessita.setText("Debole");
-        } else if(valore < 60) {
-            lblComplessita.setText("Abbastanza buona");
-        } else if(valore < 80) {
-            lblComplessita.setText("Buona");
-        } else if(valore < 100) {
-            lblComplessita.setText("Forte");
+        if(valore <= SOGLIA_MOLTO_DEBOLE) {
+            lblComplessita.setText(TESTO_MOLTO_DEBOLE);
+        } else if(valore <= SOGLIA_DEBOLE) {
+            lblComplessita.setText(TESTO_DEBOLE);
+        } else if(valore <= SOGLIA_BUONA) {
+            lblComplessita.setText(TESTO_BUONA);
+        } else if(valore <= SOGLIA_MOLTO_BUONA) {
+            lblComplessita.setText(TESTO_MOLTO_BUONA);
+        } else if(valore <= SOGLIA_FORTE) {
+            lblComplessita.setText(TESTO_FORTE);
         } else {
-            lblComplessita.setText("Molto forte");
+            lblComplessita.setText(TESTO_MOLTO_FORTE);
         }
-        pack();
+    }
+    
+    private void aggiornaLunghezza() {
+        int nuovaLunghezza = sldLunghezza.getValue();
+        if(nuovaLunghezza == lunghezza) {
+            return;
+        }
+        lunghezza = nuovaLunghezza;
+        lunghezzaStr = String.valueOf(lunghezza);
+        txtLunghezza.setText(lunghezzaStr);
+        generaPassword();
     }
     
     private boolean controllaCampi() {
@@ -239,7 +285,6 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         btnMostra.setBackground(new java.awt.Color(13, 110, 253));
         btnMostra.setForeground(new java.awt.Color(255, 255, 255));
         btnMostra.setText("Mostra");
-        btnMostra.setBorderPainted(false);
         btnMostra.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnMostra.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -254,7 +299,7 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
             .addGroup(pnlPwdPasswordLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addComponent(pwdPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnMostra, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
@@ -280,7 +325,6 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         btnNascondi.setBackground(new java.awt.Color(13, 110, 253));
         btnNascondi.setForeground(new java.awt.Color(255, 255, 255));
         btnNascondi.setText("Nascondi");
-        btnNascondi.setBorderPainted(false);
         btnNascondi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnNascondi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -295,7 +339,7 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
             .addGroup(pnlTxtPasswordLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnNascondi)
                 .addGap(0, 0, 0))
         );
@@ -314,7 +358,6 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         btnGenera.setBackground(new java.awt.Color(13, 110, 253));
         btnGenera.setForeground(new java.awt.Color(255, 255, 255));
         btnGenera.setText("Genera");
-        btnGenera.setBorderPainted(false);
         btnGenera.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnGenera.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -325,10 +368,10 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         _lblComplessita.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         _lblComplessita.setText("Complessità");
 
-        pbComplessita.setForeground(new java.awt.Color(25, 135, 84));
-        pbComplessita.setValue(50);
+        pbComplessita.setForeground(new java.awt.Color(220, 53, 69));
+        pbComplessita.setValue(10);
 
-        lblComplessita.setText("Normale");
+        lblComplessita.setText("Molto debole");
 
         txtLunghezza.setHorizontalAlignment(javax.swing.JTextField.CENTER);
         txtLunghezza.setText("6");
@@ -349,6 +392,11 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         sldLunghezza.addMouseMotionListener(new java.awt.event.MouseMotionAdapter() {
             public void mouseDragged(java.awt.event.MouseEvent evt) {
                 sldLunghezzaMouseDragged(evt);
+            }
+        });
+        sldLunghezza.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                sldLunghezzaMouseClicked(evt);
             }
         });
 
@@ -438,7 +486,6 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         btnIndietro.setBackground(new java.awt.Color(108, 117, 125));
         btnIndietro.setForeground(new java.awt.Color(255, 255, 255));
         btnIndietro.setText("Indietro");
-        btnIndietro.setBorderPainted(false);
         btnIndietro.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnIndietro.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -449,7 +496,6 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         btnSalva.setBackground(new java.awt.Color(25, 135, 84));
         btnSalva.setForeground(new java.awt.Color(255, 255, 255));
         btnSalva.setText("Salva");
-        btnSalva.setBorderPainted(false);
         btnSalva.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSalva.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -465,37 +511,29 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
                 .addGap(6, 6, 6)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(pnlPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(btnGenera)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(btnManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnCasuale, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(_lblTipologia)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(_lblPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(_lblComplessita)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(lblComplessita)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(pnlConfigurazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addGroup(layout.createSequentialGroup()
                         .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(btnIndietro)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(btnSalva)))
+                        .addComponent(btnSalva))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(pnlPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnGenera, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(btnManuale, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(btnCasuale, javax.swing.GroupLayout.PREFERRED_SIZE, 98, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(_lblTipologia)
+                            .addComponent(_lblPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(_lblComplessita)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(lblComplessita))
+                            .addComponent(pnlConfigurazione, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -534,19 +572,21 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
 
     private void btnTipologiaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTipologiaActionPerformed
         switch(evt.getActionCommand()) {
-            case "Manuale":
+            case MANUALE_ACTION_COMMAND:
                 btnGenera.setVisible(false);
                 pnlConfigurazione.setVisible(false);
+                btnMostra.setVisible(true);
                 btnNascondi.setVisible(true);
                 txtPassword.setEditable(true);
                 break;
-            case "Casuale":
+            case CASUALE_ACTION_COMMAND:
                 btnGenera.setVisible(true);
                 pnlConfigurazione.setVisible(true);
-                mostraPassword();
+                btnMostra.setVisible(false);
                 btnNascondi.setVisible(false);
                 txtPassword.setEditable(false);
                 generaPassword();
+                mostraPassword();
                 break;
         }
         pack();
@@ -561,23 +601,21 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     }//GEN-LAST:event_btnNascondiActionPerformed
 
     private void sldLunghezzaMouseDragged(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sldLunghezzaMouseDragged
-        lunghezza = sldLunghezza.getValue();
-        txtLunghezza.setText(String.valueOf(lunghezza));
-        generaPassword();
+        aggiornaLunghezza();
     }//GEN-LAST:event_sldLunghezzaMouseDragged
 
     private void chkSceltaCaratteriActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_chkSceltaCaratteriActionPerformed
         switch(evt.getActionCommand()) {
-            case "Minuscole":
+            case MINUSCOLE_ACTION_COMMAND:
                 minuscole = chkMinuscole.isSelected();
                 break;
-            case "Maiuscole":
+            case MAIUSCOLE_ACTION_COMMAND:
                 maiuscole = chkMaiuscole.isSelected();
                 break;
-            case "Cifre":
+            case CIFRE_ACTION_COMMAND:
                 cifre = chkCifre.isSelected();
                 break;
-            case "Simboli":
+            case SIMBOLI_ACTION_COMMAND:
                 simboli = chkSimboli.isSelected();
                 break;
         }
@@ -591,14 +629,23 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
     }//GEN-LAST:event_chkSceltaCaratteriActionPerformed
 
     private void txtLunghezzaKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtLunghezzaKeyReleased
+        if(txtLunghezza.getText().isBlank()) {
+            evt.consume();
+            return;
+        }
         try {
             lunghezza = Integer.parseInt(txtLunghezza.getText());
-            sldLunghezza.setValue(lunghezza);
-            lunghezzaStr = txtLunghezza.getText();
-            generaPassword();
         } catch (NumberFormatException ex) {
             txtLunghezza.setText(lunghezzaStr);
+            return;
         }
+        if(lunghezza < LUNGHEZZA_MIN || lunghezza > LUNGHEZZA_MAX) {
+            txtLunghezza.setText(lunghezzaStr);
+            return;
+        }
+        sldLunghezza.setValue(lunghezza);
+        lunghezzaStr = txtLunghezza.getText();
+        generaPassword();
     }//GEN-LAST:event_txtLunghezzaKeyReleased
 
     private void btnGeneraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGeneraActionPerformed
@@ -636,47 +683,9 @@ public class DialogNuovaPassword extends javax.swing.JDialog {
         dispose();
     }//GEN-LAST:event_btnSalvaActionPerformed
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DialogNuovaPassword.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DialogNuovaPassword.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DialogNuovaPassword.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DialogNuovaPassword.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                DialogNuovaPassword dialog = new DialogNuovaPassword(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
+    private void sldLunghezzaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_sldLunghezzaMouseClicked
+        aggiornaLunghezza();
+    }//GEN-LAST:event_sldLunghezzaMouseClicked
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel _lblComplessita;

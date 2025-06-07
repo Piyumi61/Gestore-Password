@@ -4,7 +4,20 @@ import it.iiscastelli.pwdmgr.config.Costanti;
 
 public class ValutatoreComplessita implements Costanti {
     
-    private static final int LUNGHEZZA_MIN = 8;
+    private static final int LUNGHEZZA_MIN_REQUISITO = 8;
+    
+    public static final int SOGLIA_MOLTO_DEBOLE = 16;
+    public static final int SOGLIA_DEBOLE = 33;
+    public static final int SOGLIA_BUONA = 49;
+    public static final int SOGLIA_MOLTO_BUONA = 66;
+    public static final int SOGLIA_FORTE = 83;
+    
+    public static final String TESTO_MOLTO_DEBOLE = "Molto debole";
+    public static final String TESTO_DEBOLE = "Debole";
+    public static final String TESTO_BUONA = "Buona";
+    public static final String TESTO_MOLTO_BUONA = "Molto buona";
+    public static final String TESTO_FORTE = "Forte";
+    public static final String TESTO_MOLTO_FORTE = "Molto forte";
     
     private String password;
 
@@ -276,7 +289,7 @@ public class ValutatoreComplessita implements Costanti {
         punteggio += n * 2;
         
         // requisiti
-        if(lunghezza >= LUNGHEZZA_MIN) {
+        if(lunghezza >= LUNGHEZZA_MIN_REQUISITO) {
             n = contaRequisitiSoddisfatti(numMaiuscole, numMinuscole, numCifre, numSimboli);
             if(n >= 4) {
                 punteggio += n * 2;

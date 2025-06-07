@@ -1,13 +1,101 @@
 package it.iiscastelli.pwdmgr.ui;
 
+import it.iiscastelli.pwdmgr.config.Colore;
+import it.iiscastelli.pwdmgr.model.ValutatoreComplessita;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
 public class DialogValutaComplessita extends javax.swing.JDialog {
 
+    private static final int SOGLIA_MOLTO_DEBOLE = ValutatoreComplessita.SOGLIA_MOLTO_DEBOLE;
+    private static final int SOGLIA_DEBOLE = ValutatoreComplessita.SOGLIA_DEBOLE;
+    private static final int SOGLIA_BUONA = ValutatoreComplessita.SOGLIA_BUONA;
+    private static final int SOGLIA_MOLTO_BUONA = ValutatoreComplessita.SOGLIA_MOLTO_BUONA;
+    private static final int SOGLIA_FORTE = ValutatoreComplessita.SOGLIA_FORTE;
+    
+    private static final String TESTO_MOLTO_DEBOLE = ValutatoreComplessita.TESTO_MOLTO_DEBOLE;
+    private static final String TESTO_DEBOLE = ValutatoreComplessita.TESTO_DEBOLE;
+    private static final String TESTO_BUONA = ValutatoreComplessita.TESTO_BUONA;
+    private static final String TESTO_MOLTO_BUONA = ValutatoreComplessita.TESTO_MOLTO_BUONA;
+    private static final String TESTO_FORTE = ValutatoreComplessita.TESTO_FORTE;
+    private static final String TESTO_MOLTO_FORTE = ValutatoreComplessita.TESTO_MOLTO_FORTE;
+    
+    private ValutatoreComplessita valutatore;
+    private String password;
+    
     /**
      * Creates new form DialogNuovaPassword
      */
     public DialogValutaComplessita(java.awt.Frame parent, boolean modal) {
         super(parent, modal);
         initComponents();
+        inizializza();
+    }
+    
+    private void inizializza() {
+        password = "";
+        valutatore = new ValutatoreComplessita(password);
+        pbComplessita.setValue(0);
+        lblComplessita.setVisible(false);
+        nascondiPassword();
+    }
+    
+    private void mostraPassword() {
+        pnlPwdPassword.setVisible(false);
+        pnlTxtPassword.setVisible(true);
+        txtPassword.requestFocus();
+        txtPassword.setText(password);
+        txtPassword.select(password.length(), password.length());
+    }
+    
+    private void nascondiPassword() {
+        pnlTxtPassword.setVisible(false);
+        pnlPwdPassword.setVisible(true);
+        pwdPassword.requestFocus();
+        pwdPassword.setText(password);
+        pwdPassword.select(password.length(), password.length());
+    }
+    
+    private void valutaComplessita() {
+        int punteggio = valutatore.valuta();
+        pbComplessita.setValue(punteggio);
+        aggiornaColoreProgressBar();
+        aggiornaTestoComplessita();
+    }
+    
+    private void aggiornaColoreProgressBar() {
+        int valore = pbComplessita.getValue();
+        if(valore <= SOGLIA_MOLTO_DEBOLE) {
+            pbComplessita.setForeground(Colore.RED);
+        } else if(valore <= SOGLIA_DEBOLE) {
+            pbComplessita.setForeground(Colore.ORANGE);
+        } else if(valore <= SOGLIA_BUONA) {
+            pbComplessita.setForeground(Colore.YELLOW);
+        } else if(valore <= SOGLIA_MOLTO_BUONA) {
+            pbComplessita.setForeground(Colore.GREEN);
+        } else if(valore <= SOGLIA_FORTE) {
+            pbComplessita.setForeground(Colore.TEAL);
+        } else {
+            pbComplessita.setForeground(Colore.CYAN);
+        }
+    }
+    
+    private void aggiornaTestoComplessita() {
+        int valore = pbComplessita.getValue();
+        lblComplessita.setVisible(!password.isEmpty());
+        if(valore <= SOGLIA_MOLTO_DEBOLE) {
+            lblComplessita.setText(TESTO_MOLTO_DEBOLE);
+        } else if(valore <= SOGLIA_DEBOLE) {
+            lblComplessita.setText(TESTO_DEBOLE);
+        } else if(valore <= SOGLIA_BUONA) {
+            lblComplessita.setText(TESTO_BUONA);
+        } else if(valore <= SOGLIA_MOLTO_BUONA) {
+            lblComplessita.setText(TESTO_MOLTO_BUONA);
+        } else if(valore <= SOGLIA_FORTE) {
+            lblComplessita.setText(TESTO_FORTE);
+        } else {
+            lblComplessita.setText(TESTO_MOLTO_FORTE);
+        }
     }
 
     /**
@@ -28,24 +116,34 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
         txtPassword = new javax.swing.JTextField();
         btnNascondi = new javax.swing.JButton();
         _lblComplessita = new javax.swing.JLabel();
-        _pbComplessita = new javax.swing.JProgressBar();
+        pbComplessita = new javax.swing.JProgressBar();
         lblComplessita = new javax.swing.JLabel();
         btnChiudi = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Valutazione complessità password");
+        setResizable(false);
 
         _lblPassword.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         _lblPassword.setText("Password");
 
         pnlPassword.setLayout(new javax.swing.OverlayLayout(pnlPassword));
 
-        pwdPassword.setText("jPasswordField1");
+        pwdPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtPasswordKeyReleased(evt);
+            }
+        });
 
         btnMostra.setBackground(new java.awt.Color(13, 110, 253));
         btnMostra.setForeground(new java.awt.Color(255, 255, 255));
         btnMostra.setText("Mostra");
-        btnMostra.setBorderPainted(false);
         btnMostra.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnMostra.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMostraActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlPwdPasswordLayout = new javax.swing.GroupLayout(pnlPwdPassword);
         pnlPwdPassword.setLayout(pnlPwdPasswordLayout);
@@ -56,7 +154,7 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
                 .addComponent(pwdPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnMostra, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
+                .addGap(0, 0, 0))
         );
         pnlPwdPasswordLayout.setVerticalGroup(
             pnlPwdPasswordLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -64,19 +162,27 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
                 .addGap(0, 0, 0)
                 .addGroup(pnlPwdPasswordLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pwdPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnMostra))
-                .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(btnMostra)))
         );
 
         pnlPassword.add(pnlPwdPassword);
 
         txtPassword.setToolTipText("");
+        txtPassword.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                txtPasswordKeyReleased(evt);
+            }
+        });
 
         btnNascondi.setBackground(new java.awt.Color(13, 110, 253));
         btnNascondi.setForeground(new java.awt.Color(255, 255, 255));
         btnNascondi.setText("Nascondi");
-        btnNascondi.setBorderPainted(false);
         btnNascondi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnNascondi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnNascondiActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlTxtPasswordLayout = new javax.swing.GroupLayout(pnlTxtPassword);
         pnlTxtPassword.setLayout(pnlTxtPasswordLayout);
@@ -94,7 +200,7 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
             .addGroup(pnlTxtPasswordLayout.createSequentialGroup()
                 .addGap(0, 0, 0)
                 .addGroup(pnlTxtPasswordLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnNascondi))
                 .addGap(0, 0, 0))
         );
@@ -104,33 +210,40 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
         _lblComplessita.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         _lblComplessita.setText("Complessità");
 
-        _pbComplessita.setForeground(new java.awt.Color(25, 135, 84));
-        _pbComplessita.setValue(50);
+        pbComplessita.setForeground(new java.awt.Color(25, 135, 84));
+        pbComplessita.setValue(50);
 
         lblComplessita.setText("Molto debole");
 
         btnChiudi.setBackground(new java.awt.Color(108, 117, 125));
         btnChiudi.setForeground(new java.awt.Color(255, 255, 255));
         btnChiudi.setText("Chiudi");
-        btnChiudi.setBorderPainted(false);
         btnChiudi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        btnChiudi.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnChiudiActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(_lblPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(_lblComplessita)
+                    .addComponent(pnlPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(lblComplessita, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(btnChiudi)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                        .addComponent(_lblPassword, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(_lblComplessita)
-                        .addComponent(pnlPassword, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGroup(layout.createSequentialGroup()
-                            .addComponent(_pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                            .addComponent(lblComplessita)))))
+                .addComponent(btnChiudi)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -144,67 +257,49 @@ public class DialogValutaComplessita extends javax.swing.JDialog {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(lblComplessita, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(_pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(pbComplessita, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(btnChiudi)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
 
         pack();
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DialogValutaComplessita.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DialogValutaComplessita.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DialogValutaComplessita.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DialogValutaComplessita.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
+    private void btnChiudiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnChiudiActionPerformed
+        dispose();
+    }//GEN-LAST:event_btnChiudiActionPerformed
 
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                DialogValutaComplessita dialog = new DialogValutaComplessita(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
+    private void btnNascondiActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnNascondiActionPerformed
+        nascondiPassword();
+    }//GEN-LAST:event_btnNascondiActionPerformed
+
+    private void txtPasswordKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPasswordKeyReleased
+        Object source = evt.getSource();
+        if(source instanceof JPasswordField) {
+            password = new String(pwdPassword.getPassword());
+            txtPassword.setText(password);
+        } else if(source instanceof JTextField) {
+            password = txtPassword.getText();
+            pwdPassword.setText(password);
+        }
+        valutatore.setPassword(password);
+        valutaComplessita();
+    }//GEN-LAST:event_txtPasswordKeyReleased
+
+    private void btnMostraActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMostraActionPerformed
+        mostraPassword();
+    }//GEN-LAST:event_btnMostraActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel _lblComplessita;
     private javax.swing.JLabel _lblPassword;
-    private javax.swing.JProgressBar _pbComplessita;
     private javax.swing.JButton btnChiudi;
     private javax.swing.JButton btnMostra;
     private javax.swing.JButton btnNascondi;
     private javax.swing.JLabel lblComplessita;
+    private javax.swing.JProgressBar pbComplessita;
     private javax.swing.JPanel pnlPassword;
     private javax.swing.JPanel pnlPwdPassword;
     private javax.swing.JPanel pnlTxtPassword;

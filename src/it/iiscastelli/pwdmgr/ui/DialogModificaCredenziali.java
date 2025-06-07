@@ -55,6 +55,7 @@ public class DialogModificaCredenziali extends javax.swing.JDialog {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Modifica credenziali");
+        setResizable(false);
 
         _lblSitoApp.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         _lblSitoApp.setText("Sito / App");
@@ -65,7 +66,6 @@ public class DialogModificaCredenziali extends javax.swing.JDialog {
         btnChiudi.setBackground(new java.awt.Color(108, 117, 125));
         btnChiudi.setForeground(new java.awt.Color(255, 255, 255));
         btnChiudi.setText("Chiudi");
-        btnChiudi.setBorderPainted(false);
         btnChiudi.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnChiudi.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -76,7 +76,6 @@ public class DialogModificaCredenziali extends javax.swing.JDialog {
         btnSalva.setBackground(new java.awt.Color(25, 135, 84));
         btnSalva.setForeground(new java.awt.Color(255, 255, 255));
         btnSalva.setText("Salva");
-        btnSalva.setBorderPainted(false);
         btnSalva.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnSalva.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -138,49 +137,6 @@ public class DialogModificaCredenziali extends javax.swing.JDialog {
         padre.modificaCredenziali(credenziali);
         dispose();
     }//GEN-LAST:event_btnSalvaActionPerformed
-
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        /* Set the Nimbus look and feel */
-        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-         */
-        try {
-            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-                if ("Nimbus".equals(info.getName())) {
-                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                    break;
-                }
-            }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(DialogModificaCredenziali.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(DialogModificaCredenziali.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(DialogModificaCredenziali.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
-            java.util.logging.Logger.getLogger(DialogModificaCredenziali.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        }
-        //</editor-fold>
-        //</editor-fold>
-
-        /* Create and display the dialog */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                DialogModificaCredenziali dialog = new DialogModificaCredenziali(new javax.swing.JFrame(), true);
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    @Override
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel _lblSitoApp;

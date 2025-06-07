@@ -3,7 +3,12 @@ package it.iiscastelli.pwdmgr.model;
 import it.iiscastelli.pwdmgr.config.Costanti;
 import java.util.Random;
 
-public class GeneratorePassword implements Costanti {
+public class GeneratorePassword {
+    
+    private static final String MAIUSCOLE = Costanti.MAIUSCOLE;
+    private static final String MINUSCOLE = Costanti.MINUSCOLE;
+    private static final String CIFRE = Costanti.CIFRE;
+    private static final String SIMBOLI = Costanti.SIMBOLI;
     
     private static final int N_MAIUSCOLE = MAIUSCOLE.length();
     private static final int N_MINUSCOLE = MINUSCOLE.length();
@@ -15,7 +20,7 @@ public class GeneratorePassword implements Costanti {
     private boolean minuscole;
     private boolean cifre;
     private boolean simboli;
-    private Random random;
+    private final Random random;
 
     public GeneratorePassword(int lunghezza, boolean maiuscole, boolean minuscole, boolean cifre, boolean simboli) {
         this.lunghezza = lunghezza;

@@ -1,11 +1,16 @@
 package it.iiscastelli.pwdmgr.ui;
 
 import com.formdev.flatlaf.FlatLightLaf;
+import it.iiscastelli.pwdmgr.io.CaricamentoDatiListener;
+import it.iiscastelli.pwdmgr.io.FileCredenziali;
+import it.iiscastelli.pwdmgr.io.ThreadCaricatoreDati;
 import it.iiscastelli.pwdmgr.model.Credenziali;
 import it.iiscastelli.pwdmgr.ui.model.CredenzialiTableModel;
+import it.iiscastelli.pwdmgr.util.GestoreMessaggi;
 import java.awt.Toolkit;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.ListSelectionModel;
@@ -14,7 +19,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 
-public class FramePrincipale extends javax.swing.JFrame implements ListSelectionListener {
+public class FramePrincipale extends javax.swing.JFrame implements ListSelectionListener, CaricamentoDatiListener {
     
     private static final int INDICE_SITO_APP = 0;
     private static final int INDICE_USERNAME_EMAIL = 1;
@@ -23,6 +28,7 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
     private List<Credenziali> elencoCredenziali;
     private DefaultTableModel model;
     private int indiceRigaSelezionata;
+    private FileCredenziali file;
     
     /**
      * Creates new form FramePrincipale
@@ -40,6 +46,9 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
         selectionModel.addListSelectionListener(this);
         indiceRigaSelezionata = -1;
         aggiornaStatoPulsanti();
+        try {
+            file = new FileCredenziali();
+        } catch (IOException ex) {}
     }
     
     private void apriDialogNuoveCredenziali() {
@@ -49,40 +58,81 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
     
     private void apriDialogModificaCredenziali() {
         DialogModificaCredenziali dialog = new DialogModificaCredenziali(this, true);
-        dialog.setCredenziali(elencoCredenziali.get(indiceRigaSelezionata));
+        Credenziali copiaCredenziali = new Credenziali(elencoCredenziali.get(indiceRigaSelezionata));
+        dialog.setCredenziali(copiaCredenziali);
         dialog.setVisible(true);
     }
     
     private void apriDialogModificaPassword() {
         DialogModificaPassword dialog = new DialogModificaPassword(this, true);
-        dialog.setCredenziali(elencoCredenziali.get(indiceRigaSelezionata));
+        Credenziali copiaCredenziali = new Credenziali(elencoCredenziali.get(indiceRigaSelezionata));
+        dialog.setCredenziali(copiaCredenziali);
+        dialog.setVisible(true);
+    }
+    
+    private void apriDialogGeneraPassword() {
+        DialogGeneraPassword dialog = new DialogGeneraPassword(this, true);
+        dialog.setVisible(true);
+    }
+    
+    private void apriDialogValutaComplessita() {
+        DialogValutaComplessita dialog = new DialogValutaComplessita(this, true);
         dialog.setVisible(true);
     }
     
     public void aggiungiCredenziali(Credenziali credenziali) {
+        try {
+            file.aggiungiRecordCredenziali(credenziali);
+        } catch (IOException ex) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante il salvataggio delle credenziali");
+            return;
+        }
         elencoCredenziali.add(credenziali);
         model.addRow(credenziali.toTableRow());
+        GestoreMessaggi.mostraInformazione(this, "Credenziali salvate con successo");
     }
     
     public void modificaCredenziali(Credenziali credenziali) {
+        try {
+            file.modificaCampiCredenziali(credenziali);
+        } catch (IOException ex) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante la modifica delle credenziali");
+            return;
+        }
         Credenziali credenzialiSelezionate = elencoCredenziali.get(indiceRigaSelezionata);
         credenzialiSelezionate.setSitoApp(credenziali.getSitoApp());
         credenzialiSelezionate.setUsernameEmail(credenziali.getUsernameEmail());
         model.setValueAt(credenzialiSelezionate.getSitoApp(), indiceRigaSelezionata, INDICE_SITO_APP);
         model.setValueAt(credenzialiSelezionate.getUsernameEmail(), indiceRigaSelezionata, INDICE_USERNAME_EMAIL);
+        GestoreMessaggi.mostraInformazione(this, "Credenziali modificate con successo");
     }
     
     public void modificaPassword(Credenziali credenziali) {
+        try {
+            file.modificaCampoPassword(credenziali);
+        } catch (IOException ex) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante la modifica della password");
+            return;
+        }
         Credenziali credenzialiSelezionate = elencoCredenziali.get(indiceRigaSelezionata);
         credenzialiSelezionate.setPassword(credenziali.getPassword());
         model.setValueAt(credenzialiSelezionate.getPasswordMascherata(), indiceRigaSelezionata, INDICE_PASSWORD);
+        GestoreMessaggi.mostraInformazione(this, "Password modificata con successo");
     }
     
     public void eliminaCredenziali() {
-        elencoCredenziali.remove(indiceRigaSelezionata);
+        Credenziali credenzialiSelezionate = elencoCredenziali.get(indiceRigaSelezionata);
+        try {
+            file.eliminaRecordCredenziali(credenzialiSelezionate.getId());
+        } catch (IOException ex) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante l'eliminazione delle credenziali");
+            return;
+        }
+        elencoCredenziali.remove(credenzialiSelezionate);
         model.removeRow(indiceRigaSelezionata);
         indiceRigaSelezionata = -1;
         aggiornaStatoPulsanti();
+        GestoreMessaggi.mostraInformazione(this, "Credenziali eliminate con successo");
     }
     
     private void aggiornaStatoPulsanti() {
@@ -92,6 +142,24 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
         miPassword.setEnabled(indiceRigaSelezionata >= 0);
         btnElimina.setEnabled(indiceRigaSelezionata >= 0);
         btnCopiaPassword.setEnabled(indiceRigaSelezionata >= 0);
+    }
+    
+    @Override
+    public void valueChanged(ListSelectionEvent e) {
+        indiceRigaSelezionata = tblElencoCredenziali.getSelectedRow();
+        aggiornaStatoPulsanti();
+    }
+    
+    @Override
+    public void caricamentoCompletato(List<Credenziali> elencoCredenziali) {
+        if(elencoCredenziali == null) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante il caricamento delle credenziali");
+            return;
+        }
+        this.elencoCredenziali = elencoCredenziali;
+        for(Credenziali credenziali : elencoCredenziali) {
+            model.addRow(credenziali.toTableRow());
+        }
     }
 
     /**
@@ -127,6 +195,14 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
         setPreferredSize(new java.awt.Dimension(600, 400));
         setResizable(false);
         setSize(new java.awt.Dimension(600, 400));
+        addWindowListener(new java.awt.event.WindowAdapter() {
+            public void windowClosing(java.awt.event.WindowEvent evt) {
+                formWindowClosing(evt);
+            }
+            public void windowOpened(java.awt.event.WindowEvent evt) {
+                formWindowOpened(evt);
+            }
+        });
 
         btnNuoveCredenziali.setBackground(new java.awt.Color(13, 110, 253));
         btnNuoveCredenziali.setForeground(new java.awt.Color(255, 255, 255));
@@ -161,6 +237,7 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
                 return canEdit [columnIndex];
             }
         });
+        tblElencoCredenziali.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         tblElencoCredenziali.getTableHeader().setReorderingAllowed(false);
         _scrollPane.setViewportView(tblElencoCredenziali);
         tblElencoCredenziali.getColumnModel().getSelectionModel().setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
@@ -197,7 +274,7 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
             }
         });
 
-        btnCopiaPassword.setBackground(new java.awt.Color(108, 117, 125));
+        btnCopiaPassword.setBackground(new java.awt.Color(13, 110, 253));
         btnCopiaPassword.setForeground(new java.awt.Color(255, 255, 255));
         btnCopiaPassword.setText("Copia password negli appunti");
         btnCopiaPassword.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
@@ -248,12 +325,22 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
 
         menuBar.add(menuModifica);
 
-        menuPassword.setText("Password");
+        menuPassword.setText("Strumenti");
 
-        miGeneraCasuale.setText("Genera casuale");
+        miGeneraCasuale.setText("Genera password casuale");
+        miGeneraCasuale.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miGeneraCasualeActionPerformed(evt);
+            }
+        });
         menuPassword.add(miGeneraCasuale);
 
-        miValutaComplessita.setText("Valuta complessità");
+        miValutaComplessita.setText("Valuta complessità password");
+        miValutaComplessita.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                miValutaComplessitaActionPerformed(evt);
+            }
+        });
         menuPassword.add(miValutaComplessita);
 
         menuBar.add(menuPassword);
@@ -340,13 +427,29 @@ public class FramePrincipale extends javax.swing.JFrame implements ListSelection
         StringSelection stringSelection = new StringSelection(credenziali.getPassword());
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(stringSelection, null);
+        GestoreMessaggi.mostraInformazione(this, "Password copiata negli appunti");
     }//GEN-LAST:event_btnCopiaPasswordActionPerformed
 
-    @Override
-    public void valueChanged(ListSelectionEvent e) {
-        indiceRigaSelezionata = tblElencoCredenziali.getSelectedRow();
-        aggiornaStatoPulsanti();
-    }
+    private void miGeneraCasualeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miGeneraCasualeActionPerformed
+        apriDialogGeneraPassword();
+    }//GEN-LAST:event_miGeneraCasualeActionPerformed
+
+    private void miValutaComplessitaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_miValutaComplessitaActionPerformed
+        apriDialogValutaComplessita();
+    }//GEN-LAST:event_miValutaComplessitaActionPerformed
+
+    private void formWindowClosing(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowClosing
+        try {
+            file.chiudi();
+        } catch (IOException ex) {
+            GestoreMessaggi.mostraErrore(this, "Si è verificato un errore durante la chiusura dell'applicazione");
+        }
+    }//GEN-LAST:event_formWindowClosing
+
+    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
+        ThreadCaricatoreDati thread = new ThreadCaricatoreDati(file, this);
+        thread.start();
+    }//GEN-LAST:event_formWindowOpened
     
     /**
      * @param args the command line arguments
